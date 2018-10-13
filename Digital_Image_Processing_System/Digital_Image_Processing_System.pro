@@ -26,10 +26,13 @@ CONFIG += c++11
 
 SOURCES += \
         main.cpp \
-        psmainwindow.cpp
+        psmainwindow.cpp \
+    bmpimg.cpp
 
 HEADERS += \
-        psmainwindow.h
+        psmainwindow.h \
+    bmpfile.h \
+    bmpimg.h
 
 FORMS += \
         psmainwindow.ui

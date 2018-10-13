@@ -1,24 +1,150 @@
+<?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
  <class>PSMainWindow</class>
- <widget class="QMainWindow" name="PSMainWindow" >
-  <property name="geometry" >
+ <widget class="QMainWindow" name="PSMainWindow">
+  <property name="geometry">
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>400</width>
-    <height>300</height>
+    <width>800</width>
+    <height>600</height>
    </rect>
   </property>
-  <property name="windowTitle" >
-   <string>PSMainWindow</string>
+  <property name="sizePolicy">
+   <sizepolicy hsizetype="MinimumExpanding" vsizetype="MinimumExpanding">
+    <horstretch>0</horstretch>
+    <verstretch>0</verstretch>
+   </sizepolicy>
   </property>
-  <widget class="QMenuBar" name="menuBar" />
-  <widget class="QToolBar" name="mainToolBar" />
-  <widget class="QWidget" name="centralWidget" />
-  <widget class="QStatusBar" name="statusBar" />
+  <property name="minimumSize">
+   <size>
+    <width>800</width>
+    <height>600</height>
+   </size>
+  </property>
+  <property name="windowTitle">
+   <string>Digital Image Processing System by CYX</string>
+  </property>
+  <widget class="QWidget" name="centralWidget"/>
+  <widget class="QMenuBar" name="menuBar">
+   <property name="geometry">
+    <rect>
+     <x>0</x>
+     <y>0</y>
+     <width>800</width>
+     <height>26</height>
+    </rect>
+   </property>
+   <widget class="QMenu" name="menuFile">
+    <property name="title">
+     <string>File</string>
+    </property>
+    <addaction name="actionOpen_BMP_file"/>
+    <addaction name="actionSave_to_new_BMP_file"/>
+    <addaction name="separator"/>
+    <addaction name="actionDisplay_file_header"/>
+    <addaction name="actionGet_pixel_value"/>
+    <addaction name="actionSet_pixel_value"/>
+   </widget>
+   <widget class="QMenu" name="menuImage_Pracessing">
+    <property name="title">
+     <string>Image Pracessing</string>
+    </property>
+    <addaction name="actionImage_interpolation"/>
+    <addaction name="actionMedian_filtering"/>
+    <addaction name="actionGaussian_smoothing"/>
+    <addaction name="separator"/>
+    <addaction name="actionHistogram_equalization"/>
+    <addaction name="actionSharpening_by_gradient"/>
+    <addaction name="actionBilateral_filter"/>
+    <addaction name="actionAdd_impulse_noise"/>
+    <addaction name="actionCanny_edge_detection"/>
+   </widget>
+   <widget class="QMenu" name="menuAbout">
+    <property name="title">
+     <string>About</string>
+    </property>
+   </widget>
+   <addaction name="menuFile"/>
+   <addaction name="menuImage_Pracessing"/>
+   <addaction name="menuAbout"/>
+  </widget>
+  <widget class="QToolBar" name="mainToolBar">
+   <attribute name="toolBarArea">
+    <enum>TopToolBarArea</enum>
+   </attribute>
+   <attribute name="toolBarBreak">
+    <bool>false</bool>
+   </attribute>
+  </widget>
+  <widget class="QStatusBar" name="statusBar"/>
+  <action name="actionOpen_BMP_file">
+   <property name="text">
+    <string>Open BMP file</string>
+   </property>
+  </action>
+  <action name="actionSave_to_new_BMP_file">
+   <property name="text">
+    <string>Save to new BMP file</string>
+   </property>
+  </action>
+  <action name="actionDisplay_file_header">
+   <property name="text">
+    <string>Display file header</string>
+   </property>
+  </action>
+  <action name="actionGet_pixel_value">
+   <property name="text">
+    <string>Get pixel value</string>
+   </property>
+  </action>
+  <action name="actionSet_pixel_value">
+   <property name="text">
+    <string>Set pixel value</string>
+   </property>
+  </action>
+  <action name="actionImage_interpolation">
+   <property name="text">
+    <string>Image interpolation</string>
+   </property>
+  </action>
+  <action name="actionMedian_filtering">
+   <property name="text">
+    <string>Median filtering</string>
+   </property>
+  </action>
+  <action name="actionGaussian_smoothing">
+   <property name="text">
+    <string>Gaussian smoothing</string>
+   </property>
+  </action>
+  <action name="actionHistogram_equalization">
+   <property name="text">
+    <string>Histogram equalization</string>
+   </property>
+  </action>
+  <action name="actionSharpening_by_gradient">
+   <property name="text">
+    <string>Sharpening by gradient</string>
+   </property>
+  </action>
+  <action name="actionBilateral_filter">
+   <property name="text">
+    <string>Bilateral filter</string>
+   </property>
+  </action>
+  <action name="actionAdd_impulse_noise">
+   <property name="text">
+    <string>Add impulse noise</string>
+   </property>
+  </action>
+  <action name="actionCanny_edge_detection">
+   <property name="text">
+    <string>Canny edge detection</string>
+   </property>
+  </action>
  </widget>
- <layoutDefault spacing="6" margin="11" />
- <pixmapfunction></pixmapfunction>
+ <layoutdefault spacing="6" margin="11"/>
  <resources/>
  <connections/>
 </ui>
