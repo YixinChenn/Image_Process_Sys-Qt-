@@ -19,6 +19,11 @@ private:
 public:
     BMPIMG();//新建BMP文件
     BMPIMG(QString filename);//打开已有BMP文件
+    bool isEmpty();
+    bool getImage(QString filename);
+    void setImage(BMPIMG image);
+    BITMAPFILEHEADER getFileHeader();
+    BITMAPINFOHEADER getInfoHeader();
 };
 
 #endif // BMPIMG_H

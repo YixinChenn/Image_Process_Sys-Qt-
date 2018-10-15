@@ -27,15 +27,18 @@ CONFIG += c++11
 SOURCES += \
         main.cpp \
         psmainwindow.cpp \
-    bmpimg.cpp
+    bmpimg.cpp \
+    headerinfodialog.cpp
 
 HEADERS += \
         psmainwindow.h \
     bmpfile.h \
-    bmpimg.h
+    bmpimg.h \
+    headerinfodialog.h
 
 FORMS += \
-        psmainwindow.ui
+        psmainwindow.ui \
+    headerinfodialog.ui
 
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin

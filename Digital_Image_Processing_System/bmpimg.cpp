@@ -1,15 +1,34 @@
 #include "bmpimg.h"
 
+BMPIMG::BMPIMG()
+{
+    fileHeader.bfType = 0;
+}
+
 BMPIMG::BMPIMG(QString filename)
 {
-    char *buf;
-    char *p;
-    int r,g,b,pix;
+    if(!getImage(filename)){
+        fileHeader.bfType = 0;
+    }
+}
+
+bool BMPIMG::isEmpty()
+{
+    if(fileHeader.bfType != 0x424D){
+        return false;
+    }
+    else{
+        return true;
+    }
+}
+
+bool BMPIMG::getImage(QString filename)
+{
     //open file
     QFile file(filename);
     if(!file.open(QIODevice::ReadOnly)){//open file failed
         QMessageBox::warning(0, "Waring", "open file " + filename + " failed!", QMessageBox::Yes);
-        return;
+        return false;
     }
 
     //read file header
@@ -17,7 +36,7 @@ BMPIMG::BMPIMG(QString filename)
     dataStream>>fileHeader.bfType;
     if(fileHeader.bfType != 0x424D){//bfType != "BM"
         QMessageBox::warning(0, "Waring", "file " + filename + " is not a BMP image!", QMessageBox::Yes);
-        return;
+        return false;
     }
     dataStream>>fileHeader.bfSize;
     dataStream>>fileHeader.bfReserved1;
@@ -31,7 +50,7 @@ BMPIMG::BMPIMG(QString filename)
     dataStream>>infoHeader.biPlanes;
     if(infoHeader.biPlanes != 1){
         QMessageBox::warning(0, "Waring", "biPlanes is not 1!", QMessageBox::Yes);
-        return;
+        return false;
     }
     dataStream>>infoHeader.biBitCount;
     dataStream>>infoHeader.biCompression; //压缩类型
@@ -41,18 +60,46 @@ BMPIMG::BMPIMG(QString filename)
     dataStream>>infoHeader.biClrUsed; //位图实际用到的色彩数
     dataStream>>infoHeader.biClrImportant; //本位图中重要的色彩数
 
-    //read rgbquad
-    RGBQUAD tempQuad[infoHeader.biClrUsed];
-    for(unsigned int nCounti=0; nCounti<infoHeader.biClrUsed; nCounti++){
-        dataStream>>tempQuad[nCounti].rgbBlue;
-        dataStream>>tempQuad[nCounti].rgbGreen;
-        dataStream>>tempQuad[nCounti].rgbRed;
-        dataStream>>tempQuad[nCounti].rgbReserved;
+    if(infoHeader.biBitCount != 24){
+        //read rgbquad
+        rgbQuad = (RGBQUAD*)malloc(sizeof(RGBQUAD) * infoHeader.biClrUsed);
+        for(unsigned int nCounti=0; nCounti<infoHeader.biClrUsed; nCounti++){
+            dataStream>>(*(rgbQuad + nCounti)).rgbBlue;
+            dataStream>>(*(rgbQuad + nCounti)).rgbGreen;
+            dataStream>>(*(rgbQuad + nCounti)).rgbRed;
+            dataStream>>(*(rgbQuad + nCounti)).rgbReserved;
+        }
     }
-    rgbQuad = tempQuad;
 
     //read image data
+    imgData = (IMAGEDATA*)malloc(sizeof(IMAGEDATA) * infoHeader.biWidth * infoHeader.biHeight);
+    switch (infoHeader.biBitCount) {
+        case 8:
+            for(int i = 0; i < infoHeader.biHeight; i++){
+                for(int j = 0; j < infoHeader.biWidth; j++){
+                    dataStream>>(*(imgData + i * infoHeader.biWidth + j)).blue;
+                }
+            }
+        break;
+        case 24:
+            for(int i = 0; i < infoHeader.biHeight; i++){
+                for(int j = 0; j < infoHeader.biWidth; j++){
+                    dataStream>>(*(imgData + i * infoHeader.biWidth + j)).blue;
+                    dataStream>>(*(imgData + i * infoHeader.biWidth + j)).green;
+                    dataStream>>(*(imgData + i * infoHeader.biWidth + j)).red;
+                }
+            }
+        break;
+    }
+    return true;
+}
 
+BITMAPFILEHEADER BMPIMG::getFileHeader()
+{
+    return fileHeader;
+}
 
-
+BITMAPINFOHEADER BMPIMG::getInfoHeader()
+{
+    return infoHeader;
 }
