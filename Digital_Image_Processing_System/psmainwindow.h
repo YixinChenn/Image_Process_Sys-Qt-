@@ -3,7 +3,6 @@
 
 #include <QMainWindow>
 #include <QFileDialog>
-#include <QDebug>
 
 #include <bmpimg.h>
 #include <headerinfodialog.h>
@@ -29,6 +28,7 @@ private slots:
 private:
     Ui::PSMainWindow *ui;
     BMPIMG image;
+    HeaderInfoDialog headerInfoDialog;
 };
 
 #endif // PSMAINWINDOW_H

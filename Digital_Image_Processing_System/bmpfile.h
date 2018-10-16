@@ -2,10 +2,11 @@
 #define BMPFILE_H
 
 #include <QtGlobal>
+#include <QDebug>
 
 typedef unsigned char BYTE;
-typedef unsigned short WORD;
-typedef unsigned int DWORD;
+typedef unsigned short WORD;//2byte
+typedef unsigned int DWORD;//4byte
 typedef qint32 LONG;//long 32bit
 
 //位图文件头定义;

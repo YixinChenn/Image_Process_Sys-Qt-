@@ -40,7 +40,6 @@ void PSMainWindow::on_actionDisplay_file_header_triggered()
     }
     BITMAPFILEHEADER fileHeader = image.getFileHeader();
     BITMAPINFOHEADER infoHeader = image.getInfoHeader();
-    HeaderInfoDialog headerInfoDialog;
     headerInfoDialog.setInfo(fileHeader, infoHeader);
     headerInfoDialog.show();
 
