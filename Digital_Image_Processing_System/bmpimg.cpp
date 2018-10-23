@@ -111,3 +111,31 @@ BITMAPINFOHEADER BMPIMG::getInfoHeader()
 {
     return infoHeader;
 }
+
+QImage BMPIMG::toQImage()
+{
+    QImage outputImg = QImage(infoHeader.biWidth, infoHeader.biHeight, QImage::Format_ARGB32);
+    if(infoHeader.biBitCount == 32){
+        for(int i=infoHeader.biHeight-1; i>=0; i--){
+            for(int j=0; j<infoHeader.biWidth; j++){
+                QPoint pos = QPoint(j,i);
+                QColor color = QColor(imgData->red, imgData->green, imgData->blue);
+                outputImg.setPixelColor(pos, color);
+                imgData++;
+            }
+        }
+    }
+    else{
+        for(int i=infoHeader.biHeight-1; i>=0; i--){
+            for(int j=0; j<infoHeader.biWidth; j++){
+                QPoint pos = QPoint(j,i);
+                BYTE rgb = imgData->blue;
+                QColor color = QColor((rgbQuad + rgb)->rgbRed, (rgbQuad + rgb)->rgbGreen, (rgbQuad + rgb)->rgbBlue);
+                outputImg.setPixelColor(pos, color);
+                imgData++;
+            }
+        }
+    }
+
+    return outputImg;
+}

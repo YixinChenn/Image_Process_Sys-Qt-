@@ -25,7 +25,13 @@
   <property name="windowTitle">
    <string>Digital Image Processing System by CYX</string>
   </property>
-  <widget class="QWidget" name="centralWidget"/>
+  <widget class="QWidget" name="centralWidget">
+   <layout class="QGridLayout" name="gridLayout">
+    <item row="0" column="0">
+     <widget class="QGraphicsView" name="graphicsView"/>
+    </item>
+   </layout>
+  </widget>
   <widget class="QMenuBar" name="menuBar">
    <property name="geometry">
     <rect>
@@ -48,7 +54,7 @@
    </widget>
    <widget class="QMenu" name="menuImage_Pracessing">
     <property name="title">
-     <string>Image Pracessing</string>
+     <string>Image Processing</string>
     </property>
     <addaction name="actionImage_interpolation"/>
     <addaction name="actionMedian_filtering"/>

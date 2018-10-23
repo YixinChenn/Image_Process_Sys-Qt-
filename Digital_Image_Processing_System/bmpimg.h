@@ -5,6 +5,7 @@
 #include <QFile>
 #include <QMessageBox>
 #include <QDataStream>
+#include <QImage>
 
 #include <bmpfile.h>
 
@@ -24,6 +25,8 @@ public:
     void setImage(BMPIMG image);
     BITMAPFILEHEADER getFileHeader();
     BITMAPINFOHEADER getInfoHeader();
+
+    QImage toQImage();
 };
 
 #endif // BMPIMG_H

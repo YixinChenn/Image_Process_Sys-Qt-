@@ -27,6 +27,12 @@ void PSMainWindow::on_actionOpen_BMP_file_triggered()
     }
     BMPIMG image(path);
     setImg(image);
+    QImage qImage = image.toQImage();
+    QGraphicsScene *scene = new QGraphicsScene();
+    scene->addPixmap(QPixmap::fromImage(qImage));
+    qDebug()<<qImage;
+    ui->graphicsView->setScene(scene);
+    ui->graphicsView->show();
     return;
 }
 
