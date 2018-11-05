@@ -19,6 +19,11 @@ void PSMainWindow::setImg(BMPIMG image)
     return;
 }
 
+void PSMainWindow::receivePosition(QPoint p)
+{
+    this->p = p;
+}
+
 void PSMainWindow::on_actionOpen_BMP_file_triggered()
 {
     QString path = QFileDialog::getOpenFileName(this, tr("Open Image"), ".", tr("Image Files(*.bmp)"));
@@ -49,4 +54,32 @@ void PSMainWindow::on_actionDisplay_file_header_triggered()
     headerInfoDialog.setInfo(fileHeader, infoHeader);
     headerInfoDialog.show();
 
+}
+
+void PSMainWindow::on_actionSave_to_new_BMP_file_triggered()
+{
+    if(image.isEmpty()){
+        QMessageBox::information(this, tr("warning"), tr("Please open an image first."));
+        return;
+    }
+    QString path = QFileDialog::getSaveFileName(this, tr("Save Image"), " ", tr("Image Files(*.bmp)"));
+    if(!path.isNull()){
+        image.saveImage(path);
+    }
+    else{
+        QMessageBox::information(this, tr("Path"), tr("You didn't input a file name."));
+    }
+}
+
+void PSMainWindow::on_actionGet_pixel_value_triggered()
+{
+    position *dlg = new position(this);
+    connect(dlg, SIGNAL(send_position(QPoint)), this, SLOT(receivePosition(QPoint)));
+    dlg->setMax(image.getInfoHeader().biWidth, image.getInfoHeader().biHeight);
+    dlg->exec();
+    int r, g, b;
+    QColor pix = image.getPixel(p.x(), p.y());
+    colorDisplay *displayDialog = new colorDisplay();
+    displayDialog->setInfo(pix);
+    displayDialog->show();
 }

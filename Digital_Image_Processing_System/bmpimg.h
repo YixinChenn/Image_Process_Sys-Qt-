@@ -25,6 +25,8 @@ public:
     void setImage(BMPIMG image);
     BITMAPFILEHEADER getFileHeader();
     BITMAPINFOHEADER getInfoHeader();
+    bool saveImage(QString path);
+    QColor getPixel(int x, int y);
 
     QImage toQImage();
 };

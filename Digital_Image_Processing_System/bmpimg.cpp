@@ -53,10 +53,6 @@ bool BMPIMG::getImage(QString filename)
     dataStream>>infoHeader.biWidth;
     dataStream>>infoHeader.biHeight;
     dataStream>>infoHeader.biPlanes;
-//    if(infoHeader.biPlanes != 1){
-//        QMessageBox::warning(0, "Waring", "biPlanes is not 1!", QMessageBox::Yes);
-//        return false;
-//    }
     dataStream>>infoHeader.biBitCount;
     qDebug()<<"bibitccount = " + QString::number(infoHeader.biBitCount);
     dataStream>>infoHeader.biCompression; //压缩类型
@@ -64,6 +60,8 @@ bool BMPIMG::getImage(QString filename)
     dataStream>>infoHeader.biXPelsPerMeter; //水平分辨率
     dataStream>>infoHeader.biYPelsPerMeter; //垂直分辨率
     dataStream>>infoHeader.biClrUsed; //位图实际用到的色彩数
+    if(infoHeader.biClrUsed == 0 && infoHeader.biBitCount == 8)
+        infoHeader.biClrUsed = 256;
     dataStream>>infoHeader.biClrImportant; //本位图中重要的色彩数
 
     if(infoHeader.biBitCount != 24){
@@ -99,6 +97,7 @@ bool BMPIMG::getImage(QString filename)
             }
         break;
     }
+    file.close();
     return true;
 }
 
@@ -115,7 +114,7 @@ BITMAPINFOHEADER BMPIMG::getInfoHeader()
 QImage BMPIMG::toQImage()
 {
     QImage outputImg = QImage(infoHeader.biWidth, infoHeader.biHeight, QImage::Format_ARGB32);
-    if(infoHeader.biBitCount == 32){
+    if(infoHeader.biBitCount == 24){
         for(int i=infoHeader.biHeight-1; i>=0; i--){
             for(int j=0; j<infoHeader.biWidth; j++){
                 QPoint pos = QPoint(j,i);
@@ -138,4 +137,84 @@ QImage BMPIMG::toQImage()
     }
 
     return outputImg;
+}
+
+bool BMPIMG::saveImage(QString path){
+    QFile newImg(path);
+    if(!newImg.open(QIODevice::WriteOnly)){
+        QMessageBox::warning(0, "Waring", "save file " + path + " failed!", QMessageBox::Yes);
+        return false;
+    }
+    QDataStream dataStream(&newImg);
+    dataStream<<fileHeader.bfType;
+    dataStream.setByteOrder(QDataStream::LittleEndian);
+    dataStream<<fileHeader.bfSize;
+    dataStream<<fileHeader.bfReserved1;
+    dataStream<<fileHeader.bfReserved2;
+    dataStream<<fileHeader.bfOffBits;
+
+    //write info header
+    dataStream<<infoHeader.biSize;
+    dataStream<<infoHeader.biWidth;
+    dataStream<<infoHeader.biHeight;
+    dataStream<<infoHeader.biPlanes;
+    dataStream<<infoHeader.biBitCount;
+    dataStream<<infoHeader.biCompression; //压缩类型
+    dataStream<<infoHeader.biSizeImage; //压缩图像大小字节数
+    dataStream<<infoHeader.biXPelsPerMeter; //水平分辨率
+    dataStream<<infoHeader.biYPelsPerMeter; //垂直分辨率
+    dataStream<<infoHeader.biClrUsed; //位图实际用到的色彩数
+    dataStream<<infoHeader.biClrImportant; //本位图中重要的色彩数
+
+    if(infoHeader.biBitCount != 24){
+        //write rgbquad
+        for(unsigned int nCounti=0; nCounti<infoHeader.biClrUsed; nCounti++){
+            dataStream<<(*(rgbQuad + nCounti)).rgbBlue;
+            dataStream<<(*(rgbQuad + nCounti)).rgbGreen;
+            dataStream<<(*(rgbQuad + nCounti)).rgbRed;
+            dataStream<<(*(rgbQuad + nCounti)).rgbReserved;
+        }
+    }
+
+    //write image data
+    switch (infoHeader.biBitCount) {
+        case 8:
+            for(int i = 0; i < infoHeader.biWidth * infoHeader.biHeight; i++){
+                if(!imgData){
+                    qDebug()<<"A";
+                }
+                dataStream<<imgData->blue;
+                imgData++;
+            }
+        break;
+        case 24:
+            for(int i = 0; i < infoHeader.biWidth * infoHeader.biHeight; i++){
+                dataStream<<imgData->blue;
+                dataStream<<imgData->green;
+                dataStream<<imgData->red;
+                imgData++;
+            }
+        break;
+    }
+    newImg.close();
+    return true;
+}
+
+QColor BMPIMG::getPixel(int x, int y)
+{
+    IMAGEDATA pix = *(imgData + y * infoHeader.biWidth + x);
+    QColor color;
+    switch(infoHeader.biBitCount){
+        case 8:
+            color.setRed((rgbQuad + pix.blue)->rgbRed);
+            color.setBlue((rgbQuad + pix.blue)->rgbBlue);
+            color.setGreen((rgbQuad + pix.blue)->rgbGreen);
+        break;
+        case 24:
+            color.setRed(pix.red);
+            color.setBlue(pix.blue);
+            color.setGreen(pix.green);
+        break;
+    }
+    return color;
 }

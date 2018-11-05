@@ -28,17 +28,23 @@ SOURCES += \
         main.cpp \
         psmainwindow.cpp \
     bmpimg.cpp \
-    headerinfodialog.cpp
+    headerinfodialog.cpp \
+    position.cpp \
+    colordisplay.cpp
 
 HEADERS += \
         psmainwindow.h \
     bmpfile.h \
     bmpimg.h \
-    headerinfodialog.h
+    headerinfodialog.h \
+    position.h \
+    colordisplay.h
 
 FORMS += \
         psmainwindow.ui \
-    headerinfodialog.ui
+    headerinfodialog.ui \
+    position.ui \
+    colordisplay.ui
 
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin
