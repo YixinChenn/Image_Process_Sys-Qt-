@@ -1,5 +1,8 @@
 #include "bmpimg.h"
 
+/*
+ * find the most similar color in RBGQUAD with the given color
+*/
 BYTE BMPIMG::getColor(int r, int b, int g)
 {
     BYTE color = 0;
@@ -16,9 +19,12 @@ BYTE BMPIMG::getColor(int r, int b, int g)
     return color;
 }
 
-IMAGEDATA BMPIMG::getBiliner(double xSrc, double ySrc)
+/*
+ * calculate biliner color
+*/
+IMAGEDATA *BMPIMG::getBiliner(double xSrc, double ySrc)
 {
-    IMAGEDATA color;
+    IMAGEDATA *color = (IMAGEDATA*)malloc(sizeof(IMAGEDATA));
     int xF = (int)floor(xSrc);
     int yF = (int)floor(ySrc);
     int xC = (int)ceil(xSrc);
@@ -27,9 +33,9 @@ IMAGEDATA BMPIMG::getBiliner(double xSrc, double ySrc)
     IMAGEDATA xCyF = *(imgData + yF * infoHeader.biWidth + xC);
     IMAGEDATA xFyC = *(imgData + yC * infoHeader.biWidth + xF);
     IMAGEDATA xCyC = *(imgData + yC * infoHeader.biWidth + xC);
-    color.blue = (BYTE)round(xFyF.blue*(xC-xSrc)*(yC-ySrc) + xCyF.blue*(xSrc-xF)*(yC-ySrc) + xFyC.blue*(xC-xSrc)*(ySrc-yF) + xCyC.blue*(xSrc-xF)*(ySrc-yF));
-    color.green = (BYTE)round(xFyF.green*(xC-xSrc)*(yC-ySrc) + xCyF.green*(xSrc-xF)*(yC-ySrc) + xFyC.green*(xC-xSrc)*(ySrc-yF) + xCyC.green*(xSrc-xF)*(ySrc-yF));
-    color.red = (BYTE)round(xFyF.red*(xC-xSrc)*(yC-ySrc) + xCyF.red*(xSrc-xF)*(yC-ySrc) + xFyC.red*(xC-xSrc)*(ySrc-yF) + xCyC.red*(xSrc-xF)*(ySrc-yF));
+    color->blue = (BYTE)round(xFyF.blue*(xC-xSrc)*(yC-ySrc) + xCyF.blue*(xSrc-xF)*(yC-ySrc) + xFyC.blue*(xC-xSrc)*(ySrc-yF) + xCyC.blue*(xSrc-xF)*(ySrc-yF));
+    color->green = (BYTE)round(xFyF.green*(xC-xSrc)*(yC-ySrc) + xCyF.green*(xSrc-xF)*(yC-ySrc) + xFyC.green*(xC-xSrc)*(ySrc-yF) + xCyC.green*(xSrc-xF)*(ySrc-yF));
+    color->red = (BYTE)round(xFyF.red*(xC-xSrc)*(yC-ySrc) + xCyF.red*(xSrc-xF)*(yC-ySrc) + xFyC.red*(xC-xSrc)*(ySrc-yF) + xCyC.red*(xSrc-xF)*(ySrc-yF));
     return color;
 }
 
@@ -54,6 +60,10 @@ bool BMPIMG::isEmpty()
         return true;
     }
 }
+
+/*
+ * @param filename   // the path of the BMP file
+ */
 
 bool BMPIMG::getImage(QString filename)
 {
@@ -156,6 +166,10 @@ BITMAPINFOHEADER BMPIMG::getInfoHeader()
     return infoHeader;
 }
 
+/*
+ * @return displayable QImage
+*/
+
 QImage BMPIMG::toQImage()
 {
     int cnt = 0;
@@ -187,6 +201,10 @@ QImage BMPIMG::toQImage()
 
     return outputImg;
 }
+
+/*
+ * @param path  //the path of the new image
+*/
 
 bool BMPIMG::saveImage(QString path){
     QFile newImg(path);
@@ -249,15 +267,14 @@ bool BMPIMG::saveImage(QString path){
         case 24:
             for(int i = 0; i < infoHeader.biHeight; i++){
                 for(int j = 0; j < infoHeader.biWidth; j++){
-                    dataStream<<(imgData+i)->blue;
-                    dataStream<<(imgData+i)->green;
-                    dataStream<<(imgData+i)->red;
+                    dataStream<<(imgData+cnt)->blue;
+                    dataStream<<(imgData+cnt)->green;
+                    dataStream<<(imgData+cnt)->red;
+                    cnt++;
                 }
                 if(alignByte != 0){
                     for(int k = 0; k < alignByte; k++){
                         dataStream<<align.blue;
-                        dataStream<<align.green;
-                        dataStream<<align.red;
                     }
                 }
             }
@@ -269,7 +286,7 @@ bool BMPIMG::saveImage(QString path){
 
 QColor BMPIMG::getPixel(int x, int y)
 {
-    IMAGEDATA pix = *(imgData + y * infoHeader.biWidth + x);
+    IMAGEDATA pix = getPixelData(x, y);
     QColor color;
     switch(infoHeader.biBitCount){
         case 8:
@@ -286,12 +303,20 @@ QColor BMPIMG::getPixel(int x, int y)
     return color;
 }
 
+/*
+ * @param x //the x-coordinate
+ * @param y //the y-coordinate
+ * @return the IMAGEDATA needed
+*/
 IMAGEDATA BMPIMG::getPixelData(int x, int y)
 {
     IMAGEDATA pix = *(imgData + y * infoHeader.biWidth + x);
     return pix;
 }
 
+/*
+ * copy src to dst
+*/
 void BMPIMG::imgDataCpy(IMAGEDATA *src, IMAGEDATA *dst)
 {
     dst->blue = src->blue;
@@ -300,6 +325,9 @@ void BMPIMG::imgDataCpy(IMAGEDATA *src, IMAGEDATA *dst)
     return;
 }
 
+/*
+ * calculate every pixel's color in gaussian smoothing
+*/
 IMAGEDATA *BMPIMG::getGaussianColor(int x, int y, int blurRadius, double mse)
 {
     IMAGEDATA *color = (IMAGEDATA*)malloc(sizeof(IMAGEDATA));
@@ -331,6 +359,9 @@ IMAGEDATA *BMPIMG::getGaussianColor(int x, int y, int blurRadius, double mse)
     return color;
 }
 
+/*
+ * calculate the gaussian of given x, y, and MSE
+*/
 double BMPIMG::getGaussian(int x, int y, double mse)
 {
     double rst = pow(M_E, (-1)*(pow(x,2)+pow(y,2))/(2*pow(mse,2)))/(2*M_PI*pow(mse,2));
@@ -358,17 +389,15 @@ void BMPIMG::nearestInterpolation(double xScale, double yScale)
     LONG dstWidth = (LONG)round(infoHeader.biWidth * xScale);
     LONG dstHeight = (LONG)round(infoHeader.biHeight * yScale);
 
-    IMAGEDATA src;
+    IMAGEDATA *src;
     int xSrc, ySrc;
     dstImgData = (IMAGEDATA*)malloc(sizeof(IMAGEDATA) * dstWidth * dstHeight);
     for(int i=0; i<dstHeight; i++){
         for(int j=0; j<dstWidth; j++){
             xSrc = (int)round((double)j/xScale);
             ySrc = (int)round((double)i/yScale);
-            src = *(imgData + ySrc * infoHeader.biWidth + xSrc);//我是傻逼。confirmed.
-            (dstImgData + i*dstWidth + j)->blue = src.blue;
-            (dstImgData + i*dstWidth + j)->green = src.green;
-            (dstImgData + i*dstWidth + j)->red = src.red;
+            src = (imgData + ySrc * infoHeader.biWidth + xSrc);//我是傻逼。confirmed.
+            imgDataCpy(src, (dstImgData + i*dstWidth + j));
         }
     }
     imgData = dstImgData;
@@ -384,7 +413,7 @@ void BMPIMG::bilinerInterpolation(double xScale, double yScale)
     LONG dstWidth = (LONG)round(infoHeader.biWidth * xScale);
     LONG dstHeight = (LONG)round(infoHeader.biHeight * yScale);
 
-    IMAGEDATA src;
+    IMAGEDATA *src;
     double xSrc, ySrc;
     IMAGEDATA *dstImgData = (IMAGEDATA*)malloc(sizeof(IMAGEDATA) * dstWidth * dstHeight);
     for(int i = 0; i < dstHeight; i++){
@@ -396,9 +425,7 @@ void BMPIMG::bilinerInterpolation(double xScale, double yScale)
             if(xSrc > infoHeader.biWidth) xSrc = infoHeader.biWidth;
             if(ySrc > infoHeader.biHeight) ySrc = infoHeader.biHeight;
             src = getBiliner(xSrc, ySrc);
-            (dstImgData + i*dstWidth + j)->blue = src.blue;
-            (dstImgData + i*dstWidth + j)->green = src.green;
-            (dstImgData + i*dstWidth + j)->red = src.red;
+            imgDataCpy(src, (dstImgData + i*dstWidth + j));
         }
     }
     imgData = dstImgData;
@@ -419,16 +446,12 @@ void BMPIMG::medianFiltering()
     IMAGEDATA *dstImgData = (IMAGEDATA*)malloc(sizeof(IMAGEDATA) * infoHeader.biWidth * infoHeader.biHeight);
     //1st line
     for(int i = 0; i< infoHeader.biWidth; i++){
-        (dstImgData + i)->blue = (imgData + i)->blue;
-        (dstImgData + i)->green = (imgData + i)->green;
-        (dstImgData + i)->red = (imgData + i)->red;
+        imgDataCpy((imgData + i), (dstImgData + i));
         cnt++;
     }
     for(int i = 1; i < infoHeader.biHeight-1; i++){
         //begin of the line
-        (dstImgData + cnt)->blue = (imgData + cnt)->blue;
-        (dstImgData + cnt)->green = (imgData + cnt)->green;
-        (dstImgData + cnt)->red = (imgData + cnt)->red;
+        imgDataCpy((imgData + cnt), (dstImgData + cnt));
         cnt++;
         for(int j = 1; j < infoHeader.biWidth-1; j++){
             pixList[0] = getPixelData(j-1, i-1);
@@ -456,16 +479,12 @@ void BMPIMG::medianFiltering()
             cnt++;
         }
         //end of the line
-        (dstImgData + cnt)->blue = (imgData + cnt)->blue;
-        (dstImgData + cnt)->green = (imgData + cnt)->green;
-        (dstImgData + cnt)->red = (imgData + cnt)->red;
+        imgDataCpy((imgData + cnt), (dstImgData + cnt));
         cnt++;
     }
     //last line
     for(int i = 0; i< infoHeader.biWidth; i++){
-        (dstImgData + i)->blue = (imgData + i)->blue;
-        (dstImgData + i)->green = (imgData + i)->green;
-        (dstImgData + i)->red = (imgData + i)->red;
+        imgDataCpy((imgData + i), (dstImgData + i));
         cnt++;
     }
     free(imgData);

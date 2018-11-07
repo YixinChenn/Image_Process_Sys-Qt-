@@ -19,7 +19,7 @@ private:
     IMAGEDATA *imgData;
 
     BYTE getColor(int r, int b, int g);
-    IMAGEDATA getBiliner(double xSrc, double ySrc);
+    IMAGEDATA *getBiliner(double xSrc, double ySrc);
     IMAGEDATA getPixelData(int x, int y);
     void imgDataCpy(IMAGEDATA *src, IMAGEDATA *dst);
     IMAGEDATA *getGaussianColor(int x, int y, int blurRadius, double mse);

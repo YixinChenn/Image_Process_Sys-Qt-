@@ -54,6 +54,7 @@ void PSMainWindow::on_actionOpen_BMP_file_triggered()
     QString path = QFileDialog::getOpenFileName(this, tr("Open Image"), ".", tr("Image Files(*.bmp)"));
     if(path.length() == 0) {
         QMessageBox::information(this, tr("Path"), tr("You didn't select any files."));
+        return;
     }
     BMPIMG image(path);
     setImg(image);
