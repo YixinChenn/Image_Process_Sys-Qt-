@@ -31,7 +31,8 @@ SOURCES += \
     headerinfodialog.cpp \
     position.cpp \
     colordisplay.cpp \
-    scalingdialog.cpp
+    scalingdialog.cpp \
+    msedialog.cpp
 
 HEADERS += \
         psmainwindow.h \
@@ -40,14 +41,16 @@ HEADERS += \
     headerinfodialog.h \
     position.h \
     colordisplay.h \
-    scalingdialog.h
+    scalingdialog.h \
+    msedialog.h
 
 FORMS += \
         psmainwindow.ui \
     headerinfodialog.ui \
     position.ui \
     colordisplay.ui \
-    scalingdialog.ui
+    scalingdialog.ui \
+    msedialog.ui
 
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin

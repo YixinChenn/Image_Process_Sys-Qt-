@@ -292,6 +292,51 @@ IMAGEDATA BMPIMG::getPixelData(int x, int y)
     return pix;
 }
 
+void BMPIMG::imgDataCpy(IMAGEDATA *src, IMAGEDATA *dst)
+{
+    dst->blue = src->blue;
+    dst->green = src->green;
+    dst->red = src-> red;
+    return;
+}
+
+IMAGEDATA *BMPIMG::getGaussianColor(int x, int y, int blurRadius, double mse)
+{
+    IMAGEDATA *color = (IMAGEDATA*)malloc(sizeof(IMAGEDATA));
+    color->blue = 0;
+    color->red = 0;
+    color->green = 0;
+    IMAGEDATA pix;
+    double gaussian= 0, sum = 0;
+    double gaussianMatrix[blurRadius*2+1][blurRadius*2+1];
+    for(int i = y-blurRadius; i <= y+blurRadius; i++){
+        for(int j = x-blurRadius; j <= x+blurRadius; j++){
+            gaussian = getGaussian(j-x,i-y,mse);
+            gaussianMatrix[j-x+blurRadius][i-y+blurRadius] = gaussian;
+            sum += gaussian;
+        }
+    }
+    for(int i = y-blurRadius; i <= y+blurRadius; i++){
+        for(int j = x-blurRadius; j <= x+blurRadius; j++){
+            gaussian = gaussianMatrix[j-x+blurRadius][i-y+blurRadius]/sum;
+            pix = getPixelData(j, i);
+            if(infoHeader.biBitCount == 24){
+                color->green += gaussian * pix.green;
+                color->red += gaussian * pix.red;
+            }
+            color->blue += gaussian * pix.blue;
+        }
+    }
+
+    return color;
+}
+
+double BMPIMG::getGaussian(int x, int y, double mse)
+{
+    double rst = pow(M_E, (-1)*(pow(x,2)+pow(y,2))/(2*pow(mse,2)))/(2*M_PI*pow(mse,2));
+    return rst;
+}
+
 void BMPIMG::setPixel(int r, int b, int g, int x, int y)
 {
     if(infoHeader.biBitCount == 8){
@@ -422,6 +467,41 @@ void BMPIMG::medianFiltering()
         (dstImgData + i)->green = (imgData + i)->green;
         (dstImgData + i)->red = (imgData + i)->red;
         cnt++;
+    }
+    free(imgData);
+    imgData = dstImgData;
+    return;
+}
+
+void BMPIMG::gaussianSmoothing(double mse, int blurRadius)
+{
+    IMAGEDATA *dstImgData = (IMAGEDATA*)malloc(sizeof(IMAGEDATA) * infoHeader.biWidth * infoHeader.biHeight);
+    int cnt = 0;
+    for(int i = 0; i < blurRadius; i++){
+        for(int j = 0; j < infoHeader.biWidth; j++){
+            imgDataCpy((imgData + cnt), (dstImgData + cnt));
+            cnt++;
+        }
+    }
+    for(int i = blurRadius; i < infoHeader.biHeight - blurRadius; i++){
+        for(int j = 0; j < blurRadius; j++){
+            imgDataCpy((imgData + cnt), (dstImgData + cnt));
+            cnt++;
+        }
+        for(int j = blurRadius; j < infoHeader.biWidth - blurRadius; j++){
+            imgDataCpy(getGaussianColor(j, i, blurRadius, mse), (dstImgData + cnt));
+            cnt++;
+        }
+        for(int j = infoHeader.biWidth - blurRadius; j < infoHeader.biWidth; j++){
+            imgDataCpy((imgData + cnt), (dstImgData + cnt));
+            cnt++;
+        }
+    }
+    for(int i = infoHeader.biHeight - blurRadius; i < infoHeader.biHeight; i++){
+        for(int j = 0; j < infoHeader.biWidth; j++){
+            imgDataCpy((imgData + cnt), (dstImgData + cnt));
+            cnt++;
+        }
     }
     free(imgData);
     imgData = dstImgData;

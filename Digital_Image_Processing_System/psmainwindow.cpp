@@ -42,6 +42,13 @@ void PSMainWindow::receive_scaling(double xScale, double yScale, int method)
     return;
 }
 
+void PSMainWindow::receive_mse(double mse, int blurRadius)
+{
+    image.gaussianSmoothing(mse, blurRadius);
+    showImage();
+    return;
+}
+
 void PSMainWindow::on_actionOpen_BMP_file_triggered()
 {
     QString path = QFileDialog::getOpenFileName(this, tr("Open Image"), ".", tr("Image Files(*.bmp)"));
@@ -153,4 +160,12 @@ void PSMainWindow::showImage()
     ui->graphicsView->setScene(scene);
     ui->graphicsView->show();
     return;
+}
+
+void PSMainWindow::on_actionGaussian_smoothing_triggered()
+{
+    MSEDialog *mse = new MSEDialog();
+    mse->setMax(qMin(image.getInfoHeader().biWidth, image.getInfoHeader().biHeight));
+    connect(mse, SIGNAL(send_mse(double,int)), this, SLOT(receive_mse(double,int)));
+    mse->exec();
 }

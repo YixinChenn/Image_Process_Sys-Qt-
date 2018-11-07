@@ -10,6 +10,7 @@
 #include <position.h>
 #include <colordisplay.h>
 #include <scalingdialog.h>
+#include <msedialog.h>
 
 namespace Ui {
 class PSMainWindow;
@@ -29,6 +30,8 @@ private slots:
 
     void receive_scaling(double xScale, double yScale, int method);
 
+    void receive_mse(double mse, int blurRadius);
+
     void on_actionOpen_BMP_file_triggered();
 
     void on_actionDisplay_file_header_triggered();
@@ -42,6 +45,8 @@ private slots:
     void on_actionImage_interpolation_triggered();
 
     void on_actionMedian_filtering_triggered();
+
+    void on_actionGaussian_smoothing_triggered();
 
 private:
     Ui::PSMainWindow *ui;

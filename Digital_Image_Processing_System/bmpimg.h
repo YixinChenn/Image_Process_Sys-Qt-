@@ -6,6 +6,7 @@
 #include <QMessageBox>
 #include <QDataStream>
 #include <QImage>
+#include <math.h>
 
 #include <bmpfile.h>
 
@@ -20,6 +21,9 @@ private:
     BYTE getColor(int r, int b, int g);
     IMAGEDATA getBiliner(double xSrc, double ySrc);
     IMAGEDATA getPixelData(int x, int y);
+    void imgDataCpy(IMAGEDATA *src, IMAGEDATA *dst);
+    IMAGEDATA *getGaussianColor(int x, int y, int blurRadius, double mse);
+    double getGaussian(int x, int y, double mse);
 
 public:
     BMPIMG();//新建BMP文件
@@ -36,6 +40,7 @@ public:
     void nearestInterpolation(double xScale, double yScale);
     void bilinerInterpolation(double xScale, double yScale);
     void medianFiltering();
+    void gaussianSmoothing(double mse, int blurRadius);
 
     QImage toQImage();
 };
