@@ -18,6 +18,7 @@ private:
     IMAGEDATA *imgData;
 
     BYTE getColor(int r, int b, int g);
+    IMAGEDATA getBiliner(double xSrc, double ySrc);
 
 public:
     BMPIMG();//新建BMP文件

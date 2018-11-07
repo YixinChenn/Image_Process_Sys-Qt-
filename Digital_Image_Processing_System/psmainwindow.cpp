@@ -31,7 +31,7 @@ void PSMainWindow::receive_scaling(double xScale, double yScale, int method)
         image.nearestInterpolation(xScale, yScale);
     }
     else{
-//        image.bilinerInterpolation(xScale, yScale);
+        image.bilinerInterpolation(xScale, yScale);
     }
     QImage qImage = image.toQImage();
     QGraphicsScene *scene = new QGraphicsScene();

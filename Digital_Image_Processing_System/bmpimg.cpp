@@ -16,6 +16,24 @@ BYTE BMPIMG::getColor(int r, int b, int g)
     return color;
 }
 
+IMAGEDATA BMPIMG::getBiliner(double xSrc, double ySrc)
+{
+    IMAGEDATA color;
+    int xF = (int)floor(xSrc);
+    int yF = (int)floor(ySrc);
+    int xC = (int)ceil(xSrc);
+    int yC = (int)ceil(ySrc);
+    IMAGEDATA xFyF = *(imgData + yF * infoHeader.biWidth + xF);
+    IMAGEDATA xCyF = *(imgData + yF * infoHeader.biWidth + xC);
+    IMAGEDATA xFyC = *(imgData + yC * infoHeader.biWidth + xF);
+    IMAGEDATA xCyC = *(imgData + yC * infoHeader.biWidth + xC);
+    color.blue = (BYTE)round(xFyF.blue*(xC-xSrc)*(yC-ySrc) + xCyF.blue*(xSrc-xF)*(yC-ySrc) + xFyC.blue*(xC-xSrc)*(ySrc-yF) + xCyC.blue*(xSrc-xF)*(ySrc-yF));
+    color.green = (BYTE)round(xFyF.green*(xC-xSrc)*(yC-ySrc) + xCyF.green*(xSrc-xF)*(yC-ySrc) + xFyC.green*(xC-xSrc)*(ySrc-yF) + xCyC.green*(xSrc-xF)*(ySrc-yF));
+    color.red = (BYTE)round(xFyF.red*(xC-xSrc)*(yC-ySrc) + xCyF.red*(xSrc-xF)*(yC-ySrc) + xFyC.red*(xC-xSrc)*(ySrc-yF) + xCyC.red*(xSrc-xF)*(ySrc-yF));
+    return color;
+}
+
+
 BMPIMG::BMPIMG()
 {
     fileHeader.bfType = 0;
@@ -298,6 +316,36 @@ void BMPIMG::nearestInterpolation(double xScale, double yScale)
             xSrc = (int)round((double)j/xScale);
             ySrc = (int)round((double)i/yScale);
             src = *(imgData + ySrc * infoHeader.biWidth + xSrc);//我是傻逼。confirmed.
+            (dstImgData + i*dstWidth + j)->blue = src.blue;
+            (dstImgData + i*dstWidth + j)->green = src.green;
+            (dstImgData + i*dstWidth + j)->red = src.red;
+        }
+    }
+    imgData = dstImgData;
+    infoHeader.biHeight = dstHeight;
+    infoHeader.biWidth = dstWidth;
+    infoHeader.biSizeImage = dstHeight * (dstWidth + 4 - dstWidth % 4);
+    fileHeader.bfSize = infoHeader.biSizeImage + fileHeader.bfOffBits;
+
+}
+
+void BMPIMG::bilinerInterpolation(double xScale, double yScale)
+{
+    LONG dstWidth = (LONG)round(infoHeader.biWidth * xScale);
+    LONG dstHeight = (LONG)round(infoHeader.biHeight * yScale);
+
+    IMAGEDATA src;
+    double xSrc, ySrc;
+    IMAGEDATA *dstImgData = (IMAGEDATA*)malloc(sizeof(IMAGEDATA) * dstWidth * dstHeight);
+    for(int i = 0; i < dstHeight; i++){
+        for(int j = 0; j < dstWidth; j++){
+            xSrc = ((double)j + 0.5)/xScale - 0.5;
+            ySrc = ((double)i + 0.5)/yScale - 0.5;
+            if(xSrc < 0) xSrc = 0;
+            if(ySrc < 0) ySrc = 0;
+            if(xSrc > infoHeader.biWidth) xSrc = infoHeader.biWidth;
+            if(ySrc > infoHeader.biHeight) ySrc = infoHeader.biHeight;
+            src = getBiliner(xSrc, ySrc);
             (dstImgData + i*dstWidth + j)->blue = src.blue;
             (dstImgData + i*dstWidth + j)->green = src.green;
             (dstImgData + i*dstWidth + j)->red = src.red;
