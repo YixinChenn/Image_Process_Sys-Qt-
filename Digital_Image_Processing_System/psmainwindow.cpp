@@ -137,3 +137,20 @@ void PSMainWindow::on_actionImage_interpolation_triggered()
     connect(scalingDialog, SIGNAL(send_scaling(double,double,int)), this, SLOT(receive_scaling(double,double,int)));
     scalingDialog->show();
 }
+
+void PSMainWindow::on_actionMedian_filtering_triggered()
+{
+    image.medianFiltering();
+    showImage();
+    return;
+}
+
+void PSMainWindow::showImage()
+{
+    QImage qImage = image.toQImage();
+    QGraphicsScene *scene = new QGraphicsScene();
+    scene->addPixmap(QPixmap::fromImage(qImage));
+    ui->graphicsView->setScene(scene);
+    ui->graphicsView->show();
+    return;
+}

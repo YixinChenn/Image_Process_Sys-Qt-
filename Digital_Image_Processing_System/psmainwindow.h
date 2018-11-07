@@ -41,11 +41,15 @@ private slots:
 
     void on_actionImage_interpolation_triggered();
 
+    void on_actionMedian_filtering_triggered();
+
 private:
     Ui::PSMainWindow *ui;
     BMPIMG image;
     HeaderInfoDialog headerInfoDialog;
     QPoint p;
+
+    void showImage();
 };
 
 #endif // PSMAINWINDOW_H

@@ -19,6 +19,7 @@ private:
 
     BYTE getColor(int r, int b, int g);
     IMAGEDATA getBiliner(double xSrc, double ySrc);
+    IMAGEDATA getPixelData(int x, int y);
 
 public:
     BMPIMG();//新建BMP文件
@@ -34,6 +35,7 @@ public:
 
     void nearestInterpolation(double xScale, double yScale);
     void bilinerInterpolation(double xScale, double yScale);
+    void medianFiltering();
 
     QImage toQImage();
 };

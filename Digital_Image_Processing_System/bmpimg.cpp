@@ -33,7 +33,6 @@ IMAGEDATA BMPIMG::getBiliner(double xSrc, double ySrc)
     return color;
 }
 
-
 BMPIMG::BMPIMG()
 {
     fileHeader.bfType = 0;
@@ -287,6 +286,12 @@ QColor BMPIMG::getPixel(int x, int y)
     return color;
 }
 
+IMAGEDATA BMPIMG::getPixelData(int x, int y)
+{
+    IMAGEDATA pix = *(imgData + y * infoHeader.biWidth + x);
+    return pix;
+}
+
 void BMPIMG::setPixel(int r, int b, int g, int x, int y)
 {
     if(infoHeader.biBitCount == 8){
@@ -357,4 +362,68 @@ void BMPIMG::bilinerInterpolation(double xScale, double yScale)
     infoHeader.biSizeImage = dstHeight * (dstWidth + 4 - dstWidth % 4);
     fileHeader.bfSize = infoHeader.biSizeImage + fileHeader.bfOffBits;
 
+}
+
+void BMPIMG::medianFiltering()
+{
+    BYTE rList[9];
+    BYTE bList[9];
+    BYTE gList[9];
+    IMAGEDATA pixList[9];
+    int cnt = 0;
+    IMAGEDATA *dstImgData = (IMAGEDATA*)malloc(sizeof(IMAGEDATA) * infoHeader.biWidth * infoHeader.biHeight);
+    //1st line
+    for(int i = 0; i< infoHeader.biWidth; i++){
+        (dstImgData + i)->blue = (imgData + i)->blue;
+        (dstImgData + i)->green = (imgData + i)->green;
+        (dstImgData + i)->red = (imgData + i)->red;
+        cnt++;
+    }
+    for(int i = 1; i < infoHeader.biHeight-1; i++){
+        //begin of the line
+        (dstImgData + cnt)->blue = (imgData + cnt)->blue;
+        (dstImgData + cnt)->green = (imgData + cnt)->green;
+        (dstImgData + cnt)->red = (imgData + cnt)->red;
+        cnt++;
+        for(int j = 1; j < infoHeader.biWidth-1; j++){
+            pixList[0] = getPixelData(j-1, i-1);
+            pixList[1] = getPixelData(j-1, i);
+            pixList[2] = getPixelData(j-1, i+1);
+            pixList[3] = getPixelData(j, i-1);
+            pixList[4] = getPixelData(j, i);
+            pixList[5] = getPixelData(j, i+1);
+            pixList[6] = getPixelData(j+1, i-1);
+            pixList[7] = getPixelData(j+1, i);
+            pixList[8] = getPixelData(j+1, i+1);
+            for(int k = 0; k < 9; k++){
+                rList[k] = pixList[k].red;
+                bList[k] = pixList[k].blue;
+                gList[k] = pixList[k].green;
+            }
+            std::sort(bList, bList+9);
+            (dstImgData + cnt)->blue = bList[4];
+            if(infoHeader.biBitCount == 24){
+                std::sort(rList, rList+9);
+                std::sort(gList, gList+9);
+                (dstImgData + cnt)->red = rList[4];
+                (dstImgData + cnt)->green = gList[4];
+            }
+            cnt++;
+        }
+        //end of the line
+        (dstImgData + cnt)->blue = (imgData + cnt)->blue;
+        (dstImgData + cnt)->green = (imgData + cnt)->green;
+        (dstImgData + cnt)->red = (imgData + cnt)->red;
+        cnt++;
+    }
+    //last line
+    for(int i = 0; i< infoHeader.biWidth; i++){
+        (dstImgData + i)->blue = (imgData + i)->blue;
+        (dstImgData + i)->green = (imgData + i)->green;
+        (dstImgData + i)->red = (imgData + i)->red;
+        cnt++;
+    }
+    free(imgData);
+    imgData = dstImgData;
+    return;
 }
