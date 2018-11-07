@@ -17,6 +17,8 @@ private:
     RGBQUAD *rgbQuad;
     IMAGEDATA *imgData;
 
+    BYTE getColor(int r, int b, int g);
+
 public:
     BMPIMG();//新建BMP文件
     BMPIMG(QString filename);//打开已有BMP文件
@@ -27,6 +29,10 @@ public:
     BITMAPINFOHEADER getInfoHeader();
     bool saveImage(QString path);
     QColor getPixel(int x, int y);
+    void setPixel(int r, int b, int g, int x, int y);
+
+    void nearestInterpolation(double xScale, double yScale);
+    void bilinerInterpolation(double xScale, double yScale);
 
     QImage toQImage();
 };

@@ -1,5 +1,21 @@
 #include "bmpimg.h"
 
+BYTE BMPIMG::getColor(int r, int b, int g)
+{
+    BYTE color = 0;
+    int similarity = 255 * 3;
+    int temp;
+    for(int i=0; i<256; i++){
+        temp = abs((rgbQuad+i)->rgbRed - r) + abs((rgbQuad+i)->rgbBlue - b) + abs((rgbQuad+i)->rgbGreen - g);
+        if(temp < similarity){
+            similarity = temp;
+            color = (BYTE)i;
+            if(similarity == 0) break;
+        }
+    }
+    return color;
+}
+
 BMPIMG::BMPIMG()
 {
     fileHeader.bfType = 0;
@@ -24,7 +40,6 @@ bool BMPIMG::isEmpty()
 
 bool BMPIMG::getImage(QString filename)
 {
-    qDebug()<<"open file: " + filename;
     //open file
     QFile file(filename);
     if(!file.open(QIODevice::ReadOnly)){//open file failed
@@ -33,7 +48,6 @@ bool BMPIMG::getImage(QString filename)
     }
 
     //read file header
-    qDebug()<<"reading file header...";
     QDataStream dataStream(&file);
     dataStream>>fileHeader.bfType;
 
@@ -48,13 +62,11 @@ bool BMPIMG::getImage(QString filename)
     dataStream>>fileHeader.bfOffBits;
 
     //read info header
-    qDebug()<<"reading info header...";
     dataStream>>infoHeader.biSize;
     dataStream>>infoHeader.biWidth;
     dataStream>>infoHeader.biHeight;
     dataStream>>infoHeader.biPlanes;
     dataStream>>infoHeader.biBitCount;
-    qDebug()<<"bibitccount = " + QString::number(infoHeader.biBitCount);
     dataStream>>infoHeader.biCompression; //压缩类型
     dataStream>>infoHeader.biSizeImage; //压缩图像大小字节数
     dataStream>>infoHeader.biXPelsPerMeter; //水平分辨率
@@ -66,7 +78,6 @@ bool BMPIMG::getImage(QString filename)
 
     if(infoHeader.biBitCount != 24){
         //read rgbquad
-        qDebug()<<"reading rgbquad...";
         rgbQuad = (RGBQUAD*)malloc(sizeof(RGBQUAD) * infoHeader.biClrUsed);
         for(unsigned int nCounti=0; nCounti<infoHeader.biClrUsed; nCounti++){
             dataStream>>(*(rgbQuad + nCounti)).rgbBlue;
@@ -77,22 +88,39 @@ bool BMPIMG::getImage(QString filename)
     }
 
     //read image data
-    qDebug()<<"reading image data...";
     imgData = (IMAGEDATA*)malloc(sizeof(IMAGEDATA) * infoHeader.biWidth * infoHeader.biHeight);
+    int cnt = 0;
+    int align = (4 - (int)infoHeader.biWidth % 4) % 4;
+    IMAGEDATA temp;
     switch (infoHeader.biBitCount) {
         case 8:
             for(int i = 0; i < infoHeader.biHeight; i++){
                 for(int j = 0; j < infoHeader.biWidth; j++){
-                    dataStream>>(*(imgData + i * infoHeader.biWidth + j)).blue;
+                    dataStream>>(*(imgData + cnt)).blue;
+                    cnt++;
                 }
+                if(align!=0){
+                    for(int k=0; k<align; k++){
+                        dataStream >> temp.blue;
+                    }
+                }
+
             }
         break;
         case 24:
             for(int i = 0; i < infoHeader.biHeight; i++){
                 for(int j = 0; j < infoHeader.biWidth; j++){
-                    dataStream>>(*(imgData + i * infoHeader.biWidth + j)).blue;
-                    dataStream>>(*(imgData + i * infoHeader.biWidth + j)).green;
-                    dataStream>>(*(imgData + i * infoHeader.biWidth + j)).red;
+                    dataStream>>(*(imgData + cnt)).blue;
+                    dataStream>>(*(imgData + cnt)).green;
+                    dataStream>>(*(imgData + cnt)).red;
+                    cnt++;
+                }
+                if(align!=0){
+                    for(int k=0; k<align; k++){
+                        dataStream >> temp.blue;
+                        dataStream >> temp.green;
+                        dataStream >> temp.red;
+                    }
                 }
             }
         break;
@@ -113,25 +141,29 @@ BITMAPINFOHEADER BMPIMG::getInfoHeader()
 
 QImage BMPIMG::toQImage()
 {
+    int cnt = 0;
     QImage outputImg = QImage(infoHeader.biWidth, infoHeader.biHeight, QImage::Format_ARGB32);
+    QPoint pos;
+    QColor color;
+    BYTE  rgb;
     if(infoHeader.biBitCount == 24){
         for(int i=infoHeader.biHeight-1; i>=0; i--){
             for(int j=0; j<infoHeader.biWidth; j++){
-                QPoint pos = QPoint(j,i);
-                QColor color = QColor(imgData->red, imgData->green, imgData->blue);
+                pos = QPoint(j,i);
+                color = QColor((imgData + cnt)->red, (imgData + cnt)->green, (imgData + cnt)->blue);
                 outputImg.setPixelColor(pos, color);
-                imgData++;
+                cnt++;
             }
         }
     }
     else{
         for(int i=infoHeader.biHeight-1; i>=0; i--){
             for(int j=0; j<infoHeader.biWidth; j++){
-                QPoint pos = QPoint(j,i);
-                BYTE rgb = imgData->blue;
-                QColor color = QColor((rgbQuad + rgb)->rgbRed, (rgbQuad + rgb)->rgbGreen, (rgbQuad + rgb)->rgbBlue);
+                pos = QPoint(j,i);
+                rgb = (imgData + cnt)->blue;
+                color = QColor((rgbQuad + rgb)->rgbRed, (rgbQuad + rgb)->rgbGreen, (rgbQuad + rgb)->rgbBlue);
                 outputImg.setPixelColor(pos, color);
-                imgData++;
+                cnt++;
             }
         }
     }
@@ -177,22 +209,40 @@ bool BMPIMG::saveImage(QString path){
     }
 
     //write image data
+    int cnt = 0;
+    int alignByte = (4 - (int)infoHeader.biWidth % 4) % 4;
+    IMAGEDATA align;
+    align.blue = 0;
+    align.green = 0;
+    align.red = 0;
     switch (infoHeader.biBitCount) {
         case 8:
-            for(int i = 0; i < infoHeader.biWidth * infoHeader.biHeight; i++){
-                if(!imgData){
-                    qDebug()<<"A";
+            for(int i = 0; i < infoHeader.biHeight; i++){
+                for(int j = 0; j < infoHeader.biWidth; j++){
+                    dataStream<<(imgData+cnt)->blue;
+                    cnt++;
                 }
-                dataStream<<imgData->blue;
-                imgData++;
+                if(alignByte != 0){
+                    for(int k = 0; k < alignByte; k++){
+                        dataStream<<align.blue;
+                    }
+                }
             }
         break;
         case 24:
-            for(int i = 0; i < infoHeader.biWidth * infoHeader.biHeight; i++){
-                dataStream<<imgData->blue;
-                dataStream<<imgData->green;
-                dataStream<<imgData->red;
-                imgData++;
+            for(int i = 0; i < infoHeader.biHeight; i++){
+                for(int j = 0; j < infoHeader.biWidth; j++){
+                    dataStream<<(imgData+i)->blue;
+                    dataStream<<(imgData+i)->green;
+                    dataStream<<(imgData+i)->red;
+                }
+                if(alignByte != 0){
+                    for(int k = 0; k < alignByte; k++){
+                        dataStream<<align.blue;
+                        dataStream<<align.green;
+                        dataStream<<align.red;
+                    }
+                }
             }
         break;
     }
@@ -217,4 +267,46 @@ QColor BMPIMG::getPixel(int x, int y)
         break;
     }
     return color;
+}
+
+void BMPIMG::setPixel(int r, int b, int g, int x, int y)
+{
+    if(infoHeader.biBitCount == 8){
+        BYTE color = getColor(r,b,g);
+        (imgData + y * infoHeader.biWidth + x)->blue = color;
+    }
+    else{
+        (imgData + y * infoHeader.biWidth + x)->blue = b;
+        (imgData + y * infoHeader.biWidth + x)->green = g;
+        (imgData + y * infoHeader.biWidth + x)->red = r;
+    }
+    return;
+}
+
+void BMPIMG::nearestInterpolation(double xScale, double yScale)
+{
+    qDebug()<<"nearest interpolation";
+    IMAGEDATA *dstImgData;
+    LONG dstWidth = (LONG)round(infoHeader.biWidth * xScale);
+    LONG dstHeight = (LONG)round(infoHeader.biHeight * yScale);
+
+    IMAGEDATA src;
+    int xSrc, ySrc;
+    dstImgData = (IMAGEDATA*)malloc(sizeof(IMAGEDATA) * dstWidth * dstHeight);
+    for(int i=0; i<dstHeight; i++){
+        for(int j=0; j<dstWidth; j++){
+            xSrc = (int)round((double)j/xScale);
+            ySrc = (int)round((double)i/yScale);
+            src = *(imgData + ySrc * infoHeader.biWidth + xSrc);//我是傻逼。confirmed.
+            (dstImgData + i*dstWidth + j)->blue = src.blue;
+            (dstImgData + i*dstWidth + j)->green = src.green;
+            (dstImgData + i*dstWidth + j)->red = src.red;
+        }
+    }
+    imgData = dstImgData;
+    infoHeader.biHeight = dstHeight;
+    infoHeader.biWidth = dstWidth;
+    infoHeader.biSizeImage = dstHeight * (dstWidth + 4 - dstWidth % 4);
+    fileHeader.bfSize = infoHeader.biSizeImage + fileHeader.bfOffBits;
+
 }

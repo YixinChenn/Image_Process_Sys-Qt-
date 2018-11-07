@@ -30,7 +30,8 @@ SOURCES += \
     bmpimg.cpp \
     headerinfodialog.cpp \
     position.cpp \
-    colordisplay.cpp
+    colordisplay.cpp \
+    scalingdialog.cpp
 
 HEADERS += \
         psmainwindow.h \
@@ -38,13 +39,15 @@ HEADERS += \
     bmpimg.h \
     headerinfodialog.h \
     position.h \
-    colordisplay.h
+    colordisplay.h \
+    scalingdialog.h
 
 FORMS += \
         psmainwindow.ui \
     headerinfodialog.ui \
     position.ui \
-    colordisplay.ui
+    colordisplay.ui \
+    scalingdialog.ui
 
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin

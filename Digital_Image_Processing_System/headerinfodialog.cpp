@@ -15,6 +15,7 @@ HeaderInfoDialog::~HeaderInfoDialog()
 
 void HeaderInfoDialog::setInfo(BITMAPFILEHEADER fileHeader, BITMAPINFOHEADER infoHeader)
 {
+    ui->listWidget->clear();
     QString line;
     line = "btType (file type) = " + QString::number(fileHeader.bfType);
     ui->listWidget->addItem(line);

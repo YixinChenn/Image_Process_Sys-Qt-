@@ -35,18 +35,18 @@ typedef struct tagBITMAPINFOHEADER{
 }BITMAPINFOHEADER; //位图信息头定义
 
 typedef struct tagRGBQUAD{//24位时没有这个
-    BYTE rgbBlue; //该颜色的蓝色分量
-    BYTE rgbGreen; //该颜色的绿色分量
-    BYTE rgbRed; //该颜色的红色分量
-    BYTE rgbReserved; //保留值
+    BYTE rgbBlue = 0; //该颜色的蓝色分量
+    BYTE rgbGreen = 0; //该颜色的绿色分量
+    BYTE rgbRed = 0; //该颜色的红色分量
+    BYTE rgbReserved = 0; //保留值
 }RGBQUAD;//调色板定义
 
 //像素信息：24位
 typedef struct tagIMAGEDATA
 {
-    BYTE blue;//当1，4，8时，用blue存储信息
-    BYTE green;
-    BYTE red;
+    BYTE blue = 0;//当1，4，8时，用blue存储信息
+    BYTE green = 0;
+    BYTE red = 0;
 }IMAGEDATA;
 
 
